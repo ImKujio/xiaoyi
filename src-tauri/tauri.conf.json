@@ -18,7 +18,9 @@
         "open": true
       },
       "http": {
-        "scope": ["http://api.fanyi.baidu.com/api/trans/vip/translate*"]
+        "scope": [
+          "http://api.fanyi.baidu.com/api/trans/vip/translate*"
+        ]
       }
     },
     "bundle": {
@@ -72,7 +74,9 @@
         "maximized": false,
         "alwaysOnTop": true,
         "decorations": false,
-        "center": true
+        "center": true,
+        "transparent": true,
+        "visible": false
       }
     ],
     "systemTray": {

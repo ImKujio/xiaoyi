@@ -8,7 +8,9 @@ mod hotkey;
 
 use std::process::exit;
 use tauri::{ CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, generate_context, LogicalPosition, PhysicalPosition};
+use tauri::WindowEvent::Focused;
 use window_shadows::set_shadow;
+use window_vibrancy::{apply_blur, apply_vibrancy, NSVisualEffectMaterial};
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -25,6 +27,9 @@ fn main() {
         .setup(|app| {
             let window = app.get_window("main").expect("get window error");
             set_shadow(&window, true).expect("error while set_shadow");
+            #[cfg(target_os = "windows")]
+            apply_blur(&window, Some((240, 240, 240, 200)))
+                .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
             hotkey::setup(app);
             Ok(())
         })
