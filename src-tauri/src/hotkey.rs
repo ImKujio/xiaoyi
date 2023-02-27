@@ -9,21 +9,25 @@ use crate::utils::window_pos;
 pub fn setup<R: Runtime>(app: &mut App<R>) {
     let app = Box::leak(Box::new(app.app_handle()));
     bind_key(
-        Keyboard::T,
+        Keyboard::D,
         Action {
             callback: Box::new(|e, s| {
-                // 监听T按下
+                // 如果T键按下
                 if let State::Pressed = s {
+                    println!("d is pressed");
                     // 如果Ctrl和Alt也按下
                     if Keyboard::LeftControl.is_pressed() && Keyboard::LeftAlt.is_pressed() {
                         // 释放T键和Alt键
-                        Keyboard::T.release();
+                        // Keyboard::D.release();
                         Keyboard::LeftAlt.release();
                         // 按下C键并释放
                         Keyboard::C.press();
                         Keyboard::C.release();
+                        Keyboard::LeftAlt.press();
+                        // Keyboard::LeftControl.release();
+                        // Keyboard::LeftControl.release();
                         // 等待系统处理复制操作，
-                        thread::sleep(Duration::from_millis(1));
+                        thread::sleep(Duration::from_millis(10));
                         // 读取剪贴板
                         let copy: String = get_clipboard(formats::Unicode).unwrap_or(String::new());
                         // 获取窗口
@@ -42,7 +46,8 @@ pub fn setup<R: Runtime>(app: &mut App<R>) {
                 }
             }),
             inhibit: InhibitEvent::maybe(|| {
-                if Keyboard::LeftControl.is_pressed() {
+                println!("left ctrl is:{}",Keyboard::LeftControl.is_pressed());
+                if Keyboard::LeftControl.is_pressed() && Keyboard::LeftAlt.is_pressed() {
                     InhibitEvent::Yes
                 } else {
                     InhibitEvent::No
