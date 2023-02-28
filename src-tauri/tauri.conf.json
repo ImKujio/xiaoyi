@@ -2,7 +2,7 @@
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
-    "devPath": "http://localhost:1420",
+    "devPath": "http://localhost:42367",
     "distDir": "../dist",
     "withGlobalTauri": false
   },
@@ -68,8 +68,10 @@
         "fullscreen": false,
         "resizable": true,
         "title": "xiaoyi",
-        "height": 320,
         "width": 280,
+        "height": 168,
+        "minWidth": 280,
+        "minHeight": 168,
         "skipTaskbar": true,
         "maximized": false,
         "alwaysOnTop": true,

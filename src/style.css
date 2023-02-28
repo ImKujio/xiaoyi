@@ -34,3 +34,19 @@ body {
     width: 0;
     height: 0;
 }
+
+.btn-round{
+    color: #333639;
+    margin: 0;
+    width: 28px;
+    height: 28px;
+    padding: 6px;
+    background: transparent;
+    outline: 0;
+    border-radius: 14px;
+    border-width: 0;
+}
+
+.btn-round:hover{
+    background: #0000000d;
+}

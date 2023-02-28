@@ -2,7 +2,7 @@ use std::thread;
 use std::time::Duration;
 use clipboard_win::{formats, get_clipboard};
 use mki::{Action, bind_key, InhibitEvent, Keyboard, State};
-use tauri::{App, Manager, Runtime, Window};
+use tauri::{App, Manager, PhysicalSize, Runtime, Size, Window};
 use crate::utils::window_pos;
 
 
@@ -33,12 +33,13 @@ pub fn setup<R: Runtime>(app: &mut App<R>) {
                         // 获取窗口
                         let window = &app.get_window("main").unwrap();
                         // 获取窗口位置
+                        window.set_size(Size::Physical(PhysicalSize::from((280, 168)))).unwrap();
                         let size = window.outer_size().unwrap();
                         let size = (size.width as i32, size.height as i32);
                         // 获取鼠标位置并更新窗口位置
                         window.set_position(window_pos(size, false)).unwrap();
                         // 发送剪贴板内容
-                        window.emit("translate",copy).unwrap();
+                        window.emit("translate", copy).unwrap();
                         // 显示窗口并聚焦
                         window.show().unwrap();
                         window.set_focus().unwrap();
@@ -46,7 +47,7 @@ pub fn setup<R: Runtime>(app: &mut App<R>) {
                 }
             }),
             inhibit: InhibitEvent::maybe(|| {
-                println!("left ctrl is:{}",Keyboard::LeftControl.is_pressed());
+                println!("left ctrl is:{}", Keyboard::LeftControl.is_pressed());
                 if Keyboard::LeftControl.is_pressed() && Keyboard::LeftAlt.is_pressed() {
                     InhibitEvent::Yes
                 } else {

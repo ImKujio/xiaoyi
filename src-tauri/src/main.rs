@@ -28,7 +28,7 @@ fn main() {
             let window = app.get_window("main").expect("get window error");
             set_shadow(&window, true).expect("error while set_shadow");
             #[cfg(target_os = "windows")]
-            apply_blur(&window, Some((240, 240, 240, 200)))
+            apply_blur(&window, Some((255, 255, 255, 200)))
                 .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
             hotkey::setup(app);
             Ok(())
