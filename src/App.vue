@@ -4,18 +4,12 @@
       <button class="btn-round" @click="onPin" :style="pin ? {color:'#18a058'} : null">
         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 16 16"><g fill="none"><path d="M10.059 2.445a1.5 1.5 0 0 0-2.386.354l-2.02 3.79l-2.811.937a.5.5 0 0 0-.196.828L4.793 10.5l-2.647 2.647L2 14l.853-.146L5.5 11.207l2.146 2.147a.5.5 0 0 0 .828-.196l.937-2.81l3.779-2.024a1.5 1.5 0 0 0 .354-2.38L10.06 2.444z" fill="currentColor"></path></g></svg>
       </button>
-      <button class="btn-round" @click="open">
-        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 16 16"><g fill="none"><path d="M8.5 2.75a.75.75 0 0 0-1.5 0V7H2.75a.75.75 0 0 0 0 1.5H7v4.25a.75.75 0 0 0 1.5 0V8.5h4.25a.75.75 0 0 0 0-1.5H8.5V2.75z" fill="currentColor"></path></g></svg>
-      </button>
-      <button class="btn-round" @click="close">
-        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 16 16"><g fill="none"><rect x="3" y="7.25" width="10" height="1.5" rx=".75" fill="currentColor"></rect></g></svg>
-      </button>
     </div>
     <div class="flex-row card" style="margin-top: 4px">
       <textarea class="flex-fill" rows="4" v-model="src" style="height: 80px" placeholder="输入内容后按下Enter翻译"/>
     </div>
     <div class="flex-row card" style="margin-top: 4px;padding: 0">
-      <n-button quaternary @click="onUpper" size="small">
+      <n-button quaternary @click="test" size="small">
         英→中
       </n-button>
       <loading-view v-if="loading"/>
@@ -45,55 +39,21 @@ const drag = ref(false)
 const size = reactive({width: 0, height: 0})
 const loading = ref(false)
 let interval = false
-let int = null;
 
-function onLower() {
-  int = setInterval(lower, 10)
-}
-
-function lower() {
-  if (size.height <= 280) {
-    clearInterval(int)
-    int = null
-    return
-  }
-  size.height -= 20
-}
-
-function onUpper() {
-  if (size.height >= 600) return
-  int = setInterval(upper, 1)
-}
-
-function upper() {
-  if (size.height > 600) {
-    clearInterval(int)
-    int = null
-    return
-  }
-  size.height += 20
-}
-
-function close(){
-  if (interval) return
-  interval = true
-  const int = setInterval(()=>{
-    if (size.height <= 168) {
-      interval = false
-      clearInterval(int)
-      return
-    }
-    size.height -= 10
-  }, 1)
+function test() {
+  appWindow.innerSize().then(value => {
+    console.log(value)
+  })
 }
 
 function open(){
   console.log('interval',interval)
   if (interval) return
   interval = true
-  appWindow.outerSize().then(value => {
+  appWindow.innerSize().then(value => {
     size.height = value.height;
     size.width = value.width;
+    console.log(value)
     const int = setInterval(()=>{
       if (size.height >= 288) {
         interval = false
@@ -121,9 +81,10 @@ async function onDrag() {
 }
 
 onMounted(async () => {
-  appWindow.outerSize().then(value => {
+  appWindow.innerSize().then(value => {
     size.height = value.height;
     size.width = value.width;
+    console.log(value)
   })
   events.blur = await listen("tauri://blur", async (e) => {
     console.log("tauri://blur")
@@ -144,7 +105,6 @@ onMounted(async () => {
 })
 
 onUnmounted(async () => {
-  events.focus()
   events.blur()
   events.translate()
 })
