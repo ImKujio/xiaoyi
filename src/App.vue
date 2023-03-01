@@ -1,8 +1,14 @@
 <template>
   <div class="flex-col flex-fill" style="padding: 4px">
-    <div data-tauri-drag-region style="height: 28px">
+    <div style="height: 28px" @mousedown="onMove">
       <button class="btn-round" @click="onPin" :style="pin ? {color:'#18a058'} : null">
-        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 16 16"><g fill="none"><path d="M10.059 2.445a1.5 1.5 0 0 0-2.386.354l-2.02 3.79l-2.811.937a.5.5 0 0 0-.196.828L4.793 10.5l-2.647 2.647L2 14l.853-.146L5.5 11.207l2.146 2.147a.5.5 0 0 0 .828-.196l.937-2.81l3.779-2.024a1.5 1.5 0 0 0 .354-2.38L10.06 2.444z" fill="currentColor"></path></g></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 16 16">
+          <g fill="none">
+            <path
+                d="M10.059 2.445a1.5 1.5 0 0 0-2.386.354l-2.02 3.79l-2.811.937a.5.5 0 0 0-.196.828L4.793 10.5l-2.647 2.647L2 14l.853-.146L5.5 11.207l2.146 2.147a.5.5 0 0 0 .828-.196l.937-2.81l3.779-2.024a1.5 1.5 0 0 0 .354-2.38L10.06 2.444z"
+                fill="currentColor"></path>
+          </g>
+        </svg>
       </button>
     </div>
     <div class="flex-row card" style="margin-top: 4px">
@@ -26,10 +32,10 @@
 import {listen} from "@tauri-apps/api/event"
 import {appWindow, PhysicalSize} from '@tauri-apps/api/window';
 import {onMounted, onUnmounted, reactive, ref, watch} from "vue";
-import {Pin24Regular, Pin24Filled, Add24Regular, Subtract24Regular} from "@vicons/fluent";
 import {NButton, NIcon} from 'naive-ui'
 import baidu from "./api/baidu.js";
 import LoadingView from "./components/LoadingView.vue";
+import {invoke} from "@tauri-apps/api/tauri";
 
 const events = reactive({})
 const src = ref("")
@@ -40,21 +46,25 @@ const size = reactive({width: 0, height: 0})
 const loading = ref(false)
 let interval = false
 
+async function onMove() {
+  await invoke("start_move",{label:"main"});
+}
+
 function test() {
   appWindow.innerSize().then(value => {
     console.log(value)
   })
 }
 
-function open(){
-  console.log('interval',interval)
+function open() {
+  console.log('interval', interval)
   if (interval) return
   interval = true
   appWindow.innerSize().then(value => {
     size.height = value.height;
     size.width = value.width;
     console.log(value)
-    const int = setInterval(()=>{
+    const int = setInterval(() => {
       if (size.height >= 288) {
         interval = false
         clearInterval(int)
@@ -81,14 +91,15 @@ async function onDrag() {
 }
 
 onMounted(async () => {
+  await appWindow.onFocusChanged(event => console.log(event))
+  await appWindow.onMoved(event => console.log(event))
   appWindow.innerSize().then(value => {
     size.height = value.height;
     size.width = value.width;
     console.log(value)
   })
   events.blur = await listen("tauri://blur", async (e) => {
-    console.log("tauri://blur")
-    if (pin.value || drag.value) return;
+    if (pin.value) return;
     await appWindow.hide();
   })
   events.translate = await listen("translate", (e) => {

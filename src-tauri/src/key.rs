@@ -2,19 +2,16 @@ use std::thread;
 use std::time::Duration;
 use clipboard_win::{formats, get_clipboard};
 use mki::{Action, bind_key, InhibitEvent, Keyboard, State};
-use once_cell::sync::OnceCell;
-use tauri::{App, AppHandle, Manager, PhysicalPosition, PhysicalSize, Position, Runtime, Size, Window, Wry};
-
+use tauri::{ PhysicalPosition, PhysicalSize, Position, Runtime, Size, Window};
+use winapi::um::winuser::{GetCursorPos, GetDC};
+use winapi::um::wingdi::{GetDeviceCaps, HORZRES, VERTRES};
+use winapi::shared::windef::POINT;
+use crate::global;
 
 struct WindowInfo {
     size: Size,
     pos: Position,
 }
-
-use winapi::um::winuser::{GetCursorPos, GetDC};
-use winapi::um::wingdi::{GetDeviceCaps, HORZRES, VERTRES};
-use winapi::shared::windef::POINT;
-use crate::global::Handle;
 
 impl WindowInfo {
     pub fn new<R: Runtime>(window: &Window<R>) -> WindowInfo {
@@ -65,7 +62,7 @@ pub fn setup() {
                         // 读取剪贴板
                         let copy: String = get_clipboard(formats::Unicode).unwrap_or(String::new());
                         // 获取窗口
-                        if let Some(window) = Handle::get().get_window("main") {
+                        if let Some(window) = global::get_window("main") {
                             // 获取窗口信息
                             let window_info = WindowInfo::new(&window);
                             window.set_size(window_info.size).unwrap();
