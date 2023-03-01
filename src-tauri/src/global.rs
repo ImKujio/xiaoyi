@@ -27,7 +27,6 @@ pub fn get_window(label: &str) -> Option<Window> {
         .map(|a| a.get_window(label).unwrap())
 }
 
-
 type State = HashMap<String, String>;
 
 static STATE: OnceCell<Arc<Mutex<State>>> = OnceCell::new();

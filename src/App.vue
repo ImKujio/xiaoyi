@@ -1,7 +1,7 @@
 <template>
   <div class="flex-col flex-fill" style="padding: 4px">
-    <div style="height: 28px" @mousedown="onMove">
-      <button class="btn-round" @click="onPin" :style="pin ? {color:'#18a058'} : null">
+    <div style="height: 28px" @mousedown.self="onMove">
+      <button class="btn-round" @click.stop="onPin" :style="pin ? {color:'#18a058'} : null">
         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 16 16">
           <g fill="none">
             <path
@@ -15,9 +15,7 @@
       <textarea class="flex-fill" rows="4" v-model="src" style="height: 80px" placeholder="输入内容后按下Enter翻译"/>
     </div>
     <div class="flex-row card" style="margin-top: 4px;padding: 0">
-      <n-button quaternary @click="test" size="small">
-        英→中
-      </n-button>
+      <button class="btn-rect">英→中</button>
       <loading-view v-if="loading"/>
     </div>
     <div class="flex-fill" style="position: relative; overflow: hidden">
@@ -41,12 +39,13 @@ const events = reactive({})
 const src = ref("")
 const dst = ref("")
 const pin = ref(false)
-const drag = ref(false)
 const size = reactive({width: 0, height: 0})
 const loading = ref(false)
+let moving = false;
 let interval = false
 
 async function onMove() {
+  moving = true;
   await invoke("start_move",{label:"main"});
 }
 
@@ -57,7 +56,6 @@ function test() {
 }
 
 function open() {
-  console.log('interval', interval)
   if (interval) return
   interval = true
   appWindow.innerSize().then(value => {
@@ -79,28 +77,18 @@ watch(size, async (n) => {
   appWindow.setSize(new PhysicalSize(n.width, n.height)).then()
 })
 
-function onDragEnd() {
-  console.log("drag end")
-  drag.value = false
-}
-
-
-async function onDrag() {
-  drag.value = true
-  await appWindow.startDragging();
-}
-
 onMounted(async () => {
-  await appWindow.onFocusChanged(event => console.log(event))
-  await appWindow.onMoved(event => console.log(event))
   appWindow.innerSize().then(value => {
     size.height = value.height;
     size.width = value.width;
     console.log(value)
   })
   events.blur = await listen("tauri://blur", async (e) => {
-    if (pin.value) return;
+    if (pin.value || moving) return;
     await appWindow.hide();
+  })
+  events.moven = await listen("tauri://move",(e) =>{
+    if (e.payload === "end") moving = false;
   })
   events.translate = await listen("translate", (e) => {
     src.value = e.payload
@@ -121,6 +109,7 @@ onUnmounted(async () => {
 })
 
 function onPin() {
+  console.log("onPin")
   pin.value = !pin.value
 }
 

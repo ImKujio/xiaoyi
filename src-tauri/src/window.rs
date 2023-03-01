@@ -7,7 +7,7 @@ pub struct LabelWindow {
     window: tauri::Window<tauri::Wry>,
 }
 
-pub fn label(label: &str) -> LabelWindow {
+pub fn form_label(label: &str) -> LabelWindow {
     LabelWindow {
         label: label.to_string(),
         window: global::get_window(label).unwrap(),
@@ -42,4 +42,12 @@ pub fn start_move(label: String) {
         sequencer: false,
     });
     window.start_dragging().unwrap();
+}
+
+#[tauri::command]
+pub fn window_resize(label:String,width:i32,height:i32){
+    let window = form_label(&label);
+    let size = window.size();
+    let scale = window.scale();
+
 }
