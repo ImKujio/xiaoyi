@@ -11,17 +11,15 @@
         </svg>
       </button>
     </div>
-    <div class="flex-row card" style="margin-top: 4px">
-      <textarea class="flex-fill" rows="4" v-model="src" style="height: 80px" placeholder="输入内容后按下Enter翻译"/>
+    <div class="flex-row  card" style="margin-top: 4px">
+      <textarea class="flex-fill" rows="1" v-model="src" style="height: 16px" placeholder="输入内容后按下Enter翻译"/>
     </div>
-    <div class="flex-row card" style="margin-top: 4px;padding: 0">
-      <button class="btn-rect">英→中</button>
-      <loading-view v-if="loading"/>
-    </div>
-    <div class="flex-fill" style="position: relative; overflow: hidden">
-      <div style="max-height: 100%; margin: 0 4px; position: absolute; overflow-y: scroll">
-        {{ dst }}
-      </div>
+    <!--    <div class="flex-row card" style="margin-top: 4px;padding: 0">-->
+    <!--      <button class="btn-rect">英→中</button>-->
+    <!--      <loading-view v-if="loading"/>-->
+    <!--    </div>-->
+    <div class="flex-row flex-fill card" style="min-height: 28px;margin-top: 4px">
+      <textarea class="flex-fill" rows="1" v-model="dst" disabled/>
     </div>
   </div>
 </template>
@@ -45,7 +43,7 @@ let interval = false
 
 async function onMove() {
   moving = true;
-  await invoke("start_move",{label:"main"});
+  await invoke("start_move", {label: "main"});
 }
 
 function test() {
@@ -86,10 +84,10 @@ onMounted(async () => {
     if (pin.value || moving) return;
     await appWindow.hide();
   })
-  events.moven = await listen("tauri://move",(e) =>{
+  events.moven = await listen("tauri://move", (e) => {
     if (e.payload === "end") moving = false;
   })
-  events.translate = await listen("translate", (e) => {
+  events.translate = await listen("main://translate", (e) => {
     src.value = e.payload
     if (src.value.trim() === "") return
     loading.value = true
@@ -116,6 +114,7 @@ function onPin() {
 
 <style scoped>
 textarea {
+  padding: 0;
   resize: none;
   font-size: 14px;
   font-family: v-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";

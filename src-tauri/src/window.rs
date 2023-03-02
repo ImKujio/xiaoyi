@@ -1,30 +1,6 @@
 use mki::{Action, bind_button, InhibitEvent, Mouse, remove_button_bind, State};
-use tauri::{AppHandle, PhysicalPosition, PhysicalSize, Runtime};
+use tauri::{PhysicalPosition, PhysicalSize};
 use crate::global;
-
-pub struct LabelWindow {
-    label: String,
-    window: tauri::Window<tauri::Wry>,
-}
-
-pub fn form_label(label: &str) -> LabelWindow {
-    LabelWindow {
-        label: label.to_string(),
-        window: global::get_window(label).unwrap(),
-    }
-}
-
-impl LabelWindow {
-    fn pos(&self) -> PhysicalPosition<i32> {
-        self.window.outer_position().unwrap()
-    }
-    fn size(&self) -> PhysicalSize<u32> {
-        self.window.outer_size().unwrap()
-    }
-    fn scale(&self) -> f64 {
-        self.window.scale_factor().unwrap_or(1f64)
-    }
-}
 
 #[tauri::command]
 pub fn start_move(label: String) {
@@ -44,10 +20,32 @@ pub fn start_move(label: String) {
     window.start_dragging().unwrap();
 }
 
-#[tauri::command]
-pub fn window_resize(label:String,width:i32,height:i32){
-    let window = form_label(&label);
-    let size = window.size();
-    let scale = window.scale();
+use winapi::shared::windef::POINT;
+use winapi::um::winuser::{GetCursorPos, GetDC};
+use winapi::um::wingdi::{GetDeviceCaps, HORZRES, VERTRES};
 
+pub fn pos_by_cursor(label: &str) -> PhysicalPosition<i32> {
+    let mut pos = POINT { x: 0, y: 0 };
+    unsafe { GetCursorPos(&mut pos) };
+    let dis = unsafe {
+        let hdc = GetDC(std::ptr::null_mut());
+        (GetDeviceCaps(hdc, HORZRES) as i32, GetDeviceCaps(hdc, VERTRES) as i32)
+    };
+    let isize = initial_size(label);
+    if pos.x + isize.width > dis.0 && pos.y + isize.height > dis.1 {
+        PhysicalPosition { x: pos.x - isize.width, y: pos.y - isize.height }
+    } else if pos.x + isize.width > dis.0 {
+        PhysicalPosition { x: pos.x - isize.width, y: pos.y }
+    } else if pos.y + isize.height > dis.1 {
+        PhysicalPosition { x: pos.x, y: pos.y - isize.height }
+    } else {
+        PhysicalPosition { x: pos.x, y: pos.y }
+    }
+}
+
+pub fn initial_size(label: &str) -> PhysicalSize<i32> {
+    let window = global::get_window(&label).unwrap();
+    let scale = window.scale_factor().unwrap();
+    let size = ((280f64 * scale).round() as i32, (168f64 * scale).round() as i32);
+    PhysicalSize { width: size.0, height: size.1 }
 }

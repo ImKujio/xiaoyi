@@ -7,7 +7,6 @@ mod key;
 mod global;
 mod tray;
 mod window;
-mod mouse;
 
 use tauri::{Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, generate_context};
 use window_shadows::set_shadow;
