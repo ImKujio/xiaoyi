@@ -30,7 +30,6 @@
 import {listen} from "@tauri-apps/api/event"
 import {appWindow, PhysicalSize} from '@tauri-apps/api/window';
 import {onMounted, onUnmounted, reactive, ref, watch} from "vue";
-import {NButton, NIcon} from 'naive-ui'
 import baidu from "./api/baidu.js";
 import LoadingView from "./components/LoadingView.vue";
 import {invoke} from "@tauri-apps/api/tauri";

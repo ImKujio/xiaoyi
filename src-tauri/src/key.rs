@@ -1,12 +1,14 @@
+use std::ops::{Deref, DerefMut};
+use std::sync::{Arc, Mutex};
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use clipboard_win::{formats, get_clipboard};
-use mki::{Action, bind_key, InhibitEvent, Keyboard, State};
-use tauri::{ PhysicalPosition, PhysicalSize, Position, Runtime, Size, Window};
+use mki::{Action, bind_key, InhibitEvent, Keyboard, register_hotkey, State};
+use tauri::{ClipboardManager, GlobalShortcutManager, Manager, PhysicalPosition, PhysicalSize, Position, Runtime, Size, Window};
 use winapi::um::winuser::{GetCursorPos, GetDC};
 use winapi::um::wingdi::{GetDeviceCaps, HORZRES, VERTRES};
 use winapi::shared::windef::POINT;
-use crate::global;
+use crate::{global, window};
 
 struct WindowInfo {
     size: Size,
@@ -42,50 +44,56 @@ impl WindowInfo {
     }
 }
 
+enum ModKey {
+    CtrlAlt,
+    CtrlShift,
+    ShiftAlt,
+    CtrlAltShit,
+}
+
+fn trigger_translate(old: String) {
+    thread::spawn(move || {
+        let app = global::get_app_handle().unwrap();
+        let mut clipboard = app.clipboard_manager();
+        let window = app.get_window("main").unwrap();
+        let window_info = WindowInfo::new(&window);
+        window.set_size(window_info.size).unwrap();
+        window.set_position(window_info.pos).unwrap();
+        thread::sleep(Duration::from_micros(10));
+        let copy = clipboard.read_text().unwrap_or(Some(String::new())).unwrap_or(String::new());
+        window.emit("translate", copy).unwrap();
+        window.show().unwrap();
+        window.set_focus().unwrap();
+        clipboard.write_text(old).unwrap();
+    });
+}
+
 pub fn setup() {
-    bind_key(
-        Keyboard::D,
-        Action {
-            callback: Box::new(|e, s| {
-                // 如果T键按下
-                if let State::Pressed = s {
-                    // 如果Ctrl和Alt也按下
-                    if Keyboard::LeftControl.is_pressed() && Keyboard::LeftAlt.is_pressed() {
-                        // 释放T键和Alt键
-                        Keyboard::LeftAlt.release();
-                        // 按下C键并释放
-                        Keyboard::C.press();
-                        Keyboard::C.release();
-                        Keyboard::LeftAlt.press();
-                        // 等待系统处理复制操作，
-                        thread::sleep(Duration::from_millis(10));
-                        // 读取剪贴板
-                        let copy: String = get_clipboard(formats::Unicode).unwrap_or(String::new());
-                        // 获取窗口
-                        if let Some(window) = global::get_window("main") {
-                            // 获取窗口信息
-                            let window_info = WindowInfo::new(&window);
-                            window.set_size(window_info.size).unwrap();
-                            // 获取鼠标位置并更新窗口位置
-                            window.set_position(window_info.pos).unwrap();
-                            // 发送剪贴板内容
-                            window.emit("translate", copy).unwrap();
-                            // 显示窗口并聚焦
-                            window.show().unwrap();
-                            window.set_focus().unwrap();
-                        }
-                    }
-                }
-            }),
-            inhibit: InhibitEvent::maybe(|| {
-                if Keyboard::LeftControl.is_pressed() && Keyboard::LeftAlt.is_pressed() {
-                    InhibitEvent::Yes
-                } else {
-                    InhibitEvent::No
-                }
-            }),
-            defer: false,
-            sequencer: false,
-        },
-    );
+    let app = global::get_app_handle().unwrap();
+    let mut sm = app.global_shortcut_manager();
+    sm.register("Ctrl+Alt+D", move || {
+        let last_trigger = global::state_get("last-trigger-copy-translate".to_string())
+            .unwrap_or("0".to_string()).parse::<u128>().unwrap_or(0u128);
+        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
+        if now - last_trigger < 1000u128 { return; }
+        global::state_set("last-trigger-copy-translate".to_string(),now.to_string());
+
+        let mut clipboard = app.clipboard_manager();
+        let old = clipboard.read_text().unwrap_or(Some(String::new())).unwrap_or(String::new());
+
+        Keyboard::D.release();
+        Keyboard::LeftAlt.release();
+        Keyboard::LeftControl.release();
+
+        Keyboard::LeftControl.press();
+        Keyboard::C.press();
+        thread::sleep(Duration::from_micros(2));
+        Keyboard::C.release();
+        Keyboard::LeftControl.release();
+
+        Keyboard::LeftControl.press();
+        Keyboard::LeftAlt.press();
+
+        trigger_translate(old);
+    }).unwrap();
 }

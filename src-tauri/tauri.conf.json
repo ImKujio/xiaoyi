@@ -12,15 +12,26 @@
   },
   "tauri": {
     "allowlist": {
-      "all": true,
+      "all": false,
+      "window": {
+        "all": true
+      },
       "shell": {
         "all": false,
         "open": true
       },
+      "clipboard": {
+        "all": true
+      },
       "http": {
         "scope": [
-          "http://api.fanyi.baidu.com/api/trans/vip/translate*"
-        ]
+          "http://**",
+          "https://**"
+        ],
+        "all": true
+      },
+      "globalShortcut": {
+        "all": true
       }
     },
     "bundle": {
