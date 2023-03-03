@@ -11,75 +11,38 @@
         </svg>
       </button>
     </div>
-    <div class="flex-row  card" style="margin-top: 4px">
-      <textarea class="flex-fill" rows="1" v-model="src" style="height: 16px" placeholder="输入内容后按下Enter翻译"/>
+    <div class="flex-row card flex-fill">
+      <textarea class="flex-fill" rows="1" v-model="src" placeholder="输入内容后按下Enter翻译"/>
     </div>
-    <!--    <div class="flex-row card" style="margin-top: 4px;padding: 0">-->
-    <!--      <button class="btn-rect">英→中</button>-->
-    <!--      <loading-view v-if="loading"/>-->
-    <!--    </div>-->
-    <div class="flex-row flex-fill card" style="min-height: 28px;margin-top: 4px">
-      <textarea class="flex-fill" rows="1" v-model="dst" disabled/>
+    <div class="dst" :class="trigger ? 'expanded' : 'flex-fill'" style="position: relative; overflow: hidden" @mouseover="trigger = true" @mouseleave="trigger = false">
+      <div style="max-height: 100%; margin: 0 4px; position: absolute; overflow-y: scroll">
+        {{ dst }}
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import {listen} from "@tauri-apps/api/event"
-import {appWindow, PhysicalSize} from '@tauri-apps/api/window';
-import {onMounted, onUnmounted, reactive, ref, watch} from "vue";
+import {appWindow} from '@tauri-apps/api/window';
+import {onMounted, onUnmounted, reactive, ref} from "vue";
 import baidu from "./api/baidu.js";
-import LoadingView from "./components/LoadingView.vue";
 import {invoke} from "@tauri-apps/api/tauri";
 
 const events = reactive({})
 const src = ref("")
 const dst = ref("")
 const pin = ref(false)
-const size = reactive({width: 0, height: 0})
 const loading = ref(false)
 let moving = false;
-let interval = false
+const trigger = ref(true)
 
 async function onMove() {
   moving = true;
   await invoke("start_move", {label: "main"});
 }
 
-function test() {
-  appWindow.innerSize().then(value => {
-    console.log(value)
-  })
-}
-
-function open() {
-  if (interval) return
-  interval = true
-  appWindow.innerSize().then(value => {
-    size.height = value.height;
-    size.width = value.width;
-    console.log(value)
-    const int = setInterval(() => {
-      if (size.height >= 288) {
-        interval = false
-        clearInterval(int)
-        return
-      }
-      size.height += 10
-    }, 1)
-  })
-}
-
-watch(size, async (n) => {
-  appWindow.setSize(new PhysicalSize(n.width, n.height)).then()
-})
-
 onMounted(async () => {
-  appWindow.innerSize().then(value => {
-    size.height = value.height;
-    size.width = value.width;
-    console.log(value)
-  })
   events.blur = await listen("tauri://blur", async (e) => {
     if (pin.value || moving) return;
     await appWindow.hide();
@@ -95,7 +58,6 @@ onMounted(async () => {
       dst.value = value.trans_result.map(d => d.dst).join("\n")
     }).catch(reason => dst.value = reason).finally(() => {
       loading.value = false
-      open()
     })
   })
 })
@@ -114,13 +76,14 @@ function onPin() {
 
 <style scoped>
 textarea {
-  padding: 0;
+  padding: 1px;
   resize: none;
   font-size: 14px;
   font-family: v-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   line-height: 1.4;
   border-width: 0;
   background-color: transparent;
+  min-height: 16px;
 }
 
 textarea:focus {
@@ -132,4 +95,19 @@ textarea:focus {
   background-color: #0000000d;
   padding: 6px;
 }
+
+.dst{
+  transition: all 0.4s ease-in-out;
+}
+
+.expanded {
+  flex: 2;
+}
+
+.card.collapsed{
+  margin-top: 4px;
+  overflow-y: hidden;
+  height: 16px;
+}
+
 </style>
