@@ -16,10 +16,8 @@ fn main() {
     tauri::Builder::default()
         .setup(|app| {
             global::set_app_handle(app.handle());
-            let window = app.get_window("main").expect("get window error");
-            if let Err(_) = set_shadow(&window, true) {}
-            if let Err(_) = apply_blur(&window, Some((255, 255, 255, 200))) {}
             key::setup();
+            window::setup();
             Ok(())
         })
         .system_tray(tray::system_tray())
@@ -29,6 +27,7 @@ fn main() {
             global::state_set,
             window::start_move
         ])
+        .plugin(tauri_plugin_sqlite::init())
         .run(generate_context!())
         .expect("error while running tauri application");
 }

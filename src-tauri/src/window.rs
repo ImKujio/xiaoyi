@@ -1,15 +1,30 @@
 use mki::{Action, bind_button, InhibitEvent, Mouse, remove_button_bind, State};
-use tauri::{PhysicalPosition, PhysicalSize};
-use crate::global;
+use tauri::{PhysicalPosition, PhysicalSize, WindowEvent};
+use crate::{global, key};
+
+
+pub fn setup() {
+    let window_main = global::get_window("main").unwrap();
+    if let Err(_) = set_shadow(&window_main, true) {}
+    if let Err(_) = apply_blur(&window_main, Some((255, 255, 255, 200))) {}
+    window_main.on_window_event(|e| {
+        if let WindowEvent::Focused(focus) = e {
+            if focus.to_owned() { return; }
+            if global::state_get(format!("main://pin")) == Some(format!("1")){ return;}
+            if global::state_get(format!("main://moving")) == Some(format!("1")) {return;}
+            global::get_window("main").unwrap().hide().unwrap();
+        }
+    })
+}
 
 #[tauri::command]
 pub fn start_move(label: String) {
     let window = global::get_window(label.clone().as_str()).unwrap();
-    window.emit("tauri://move", "start").unwrap();
+    global::state_set(format!("{}://moving", label), "1".to_string());
     bind_button(Mouse::Left, Action {
         callback: Box::new(move |e, s| {
             if let State::Released = s {
-                global::get_window(label.as_str()).unwrap().emit("tauri://move", "end").unwrap();
+                global::state_set(format!("{}://moving", label), "0".to_string());
                 remove_button_bind(Mouse::Left)
             }
         }),
@@ -23,6 +38,8 @@ pub fn start_move(label: String) {
 use winapi::shared::windef::POINT;
 use winapi::um::winuser::{GetCursorPos, GetDC};
 use winapi::um::wingdi::{GetDeviceCaps, HORZRES, VERTRES};
+use window_shadows::set_shadow;
+use window_vibrancy::apply_blur;
 
 pub fn pos_by_cursor(label: &str) -> PhysicalPosition<i32> {
     let mut pos = POINT { x: 0, y: 0 };

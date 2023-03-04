@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "xiaoyi",
-    "version": "0.0.0"
+    "version": "0.1.0"
   },
   "tauri": {
     "allowlist": {
@@ -49,8 +49,8 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
-      "longDescription": "",
+      "identifier": "me.kujio.xiaoyi",
+      "longDescription": "一个简单的花刺翻译软件，选中文本按下Ctrl-Alt-D显示翻译",
       "macOS": {
         "entitlements": null,
         "exceptionDomain": "",
@@ -58,7 +58,7 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": [],
+      "resources": ["./dict.db"],
       "shortDescription": "",
       "targets": "all",
       "windows": {
@@ -80,11 +80,11 @@
         "resizable": true,
         "title": "xiaoyi",
         "width": 280,
-        "height": 173,
+        "height": 168,
         "minWidth": 280,
-        "minHeight": 173,
-        "maxWidth": 480,
-        "maxHeight": 297,
+        "minHeight": 168,
+        "maxWidth": 560,
+        "maxHeight": 336,
         "skipTaskbar": true,
         "maximized": false,
         "alwaysOnTop": true,
