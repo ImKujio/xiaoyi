@@ -14,17 +14,15 @@ fn _app_handle() -> &'static Arc<Mutex<Option<AppHandle>>> {
 }
 
 pub fn set_app_handle(app_handle: AppHandle) {
-    *_app_handle().clone().lock().unwrap().deref_mut() = Some(app_handle)
+    *_app_handle().clone().lock().unwrap() = Some(app_handle);
 }
 
-pub fn get_app_handle() -> Option<AppHandle> {
-    _app_handle().clone().lock().unwrap().deref().as_ref()
-        .map(|a| a.to_owned())
+pub fn get_app_handle() -> AppHandle {
+    _app_handle().clone().lock().unwrap().to_owned().unwrap()
 }
 
-pub fn get_window(label: &str) -> Option<Window> {
-    _app_handle().clone().lock().unwrap().deref().as_ref()
-        .map(|a| a.get_window(label).unwrap())
+pub fn get_window(label: &str) -> Window {
+    get_app_handle().get_window(label).unwrap()
 }
 
 type State = HashMap<String, String>;

@@ -1,4 +1,4 @@
-import {createApp} from "vue";
+import {createApp, watch} from "vue";
 import "./style.css";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
@@ -8,7 +8,7 @@ import "./init.js";
 NProgress.configure({showSpinner: false,})
 
 const app = createApp(App)
-app.directive('debounce', {
+app.directive('click', {
     mounted(el, binding) {
         el.addEventListener('click', () => {
             if (el.__stop_click__) return;
@@ -19,5 +19,8 @@ app.directive('debounce', {
             }, binding.arg || 500)
         })
     }
+})
+app.directive('focus', (el, binding) => {
+    binding.value ? el.focus() : el.blur();
 })
 app.mount("#app");

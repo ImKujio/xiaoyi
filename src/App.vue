@@ -1,7 +1,7 @@
 <template>
   <div class="content">
     <div id="title">
-      <button class="btn-round left" v-debounce="onPin" :style="pin ? {color:'#18a058'} : null">
+      <button class="btn-round left" v-click="onPin" :style="pin ? {color:'#18a058'} : null">
         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 16 16">
           <g fill="none">
             <path
@@ -10,11 +10,11 @@
           </g>
         </svg>
       </button>
-      <button class="btn-round left" v-debounce="onTraget">
+      <button class="btn-round left" v-click="onTraget">
         {{ query.target[target].name }}
       </button>
       <div style="flex: 1" @mousedown.self="onMove"/>
-      <button :key="key" class="btn-round right" :class="{'hide':origin,'trans-btn':trans}" v-debounce="onInsert">
+      <button :key="key" class="btn-round right" :class="{'hide':origin,'trans-btn':trans}" v-click="onInsert">
         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 20 20" style="rotate: 90deg;">
           <g fill="none">
             <path
@@ -23,7 +23,8 @@
           </g>
         </svg>
       </button>
-      <button :key="key" class="btn-round right trans-btn" :class="{'hide':origin,'trans-btn':trans}" :style="copied ? {color:'#18a058'} : null" v-debounce="onCopy">
+      <button :key="key" class="btn-round right trans-btn" :class="{'hide':origin,'trans-btn':trans}" :style="copied ? {color:'#18a058'} : null"
+              v-click="onCopy">
         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 16 16">
           <g fill="none">
             <path
@@ -32,12 +33,12 @@
           </g>
         </svg>
       </button>
-      <button class="btn-round right" :disabled="origin && !dst" v-debounce="onTrans">
+      <button class="btn-round right" :disabled="origin && !dst" v-click="onTrans">
         {{ origin ? "原" : "译" }}
       </button>
     </div>
     <flex-wrapper :key="key" :class="{'trans-page':trans,'fade':!origin,'fill':origin}" padding="4px">
-      <textarea rows="1" v-model="src" placeholder="输入内容后按下Enter翻译" @keydown.enter.prevent="onTranslate"/>
+      <textarea v-focus="origin" ref="inputRef" rows="1" v-model="src" placeholder="输入内容后按下Enter翻译" @keydown.enter.prevent="onTranslate"/>
     </flex-wrapper>
     <flex-wrapper :key="key+1000" :class="{'trans-page':trans,'fade':origin,'fill':!origin}" padding="4px">
       <div style="box-sizing: border-box;padding: 4px;width: 100%;height: 100%;overflow-y: scroll;white-space: pre-wrap;">
@@ -93,6 +94,7 @@ onMounted(async () => {
   events.translate = await listen("main://translate", async (e) => {
     src.value = e.payload.trim()
     reset()
+    if (src.value === "") inputRef.value.focus()
     await onTranslate(true)
   })
 })
@@ -120,7 +122,8 @@ async function onCopy() {
   copied.value = true
 }
 
-function onInsert() {
+async function onInsert() {
+  await invoke("insert", {label: "main", text: dst.value})
 }
 
 function reset() {
@@ -170,7 +173,7 @@ textarea {
 }
 
 .trans-btn {
-  transition: visibility 150ms linear,opacity 150ms linear;
+  transition: visibility 150ms linear, opacity 150ms linear;
 }
 
 .fade {

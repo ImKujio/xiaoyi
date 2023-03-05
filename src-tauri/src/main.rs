@@ -3,20 +3,47 @@ all(not(debug_assertions), target_os = "windows"),
 windows_subsystem = "windows"
 )]
 
-mod key;
+extern crate core;
+
+mod hotkey;
 mod global;
 mod tray;
 mod window;
+mod other;
 
-use tauri::{Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, generate_context};
-use window_shadows::set_shadow;
-use window_vibrancy::{apply_blur};
+use std::{fs, panic};
+use std::fs::OpenOptions;
+use std::io::{BufWriter, Write};
+use chrono::{Local};
+use tauri::{App, generate_context, Wry};
+
+fn handle_panic(app: &App<Wry>){
+    let mut path = app.path_resolver().app_log_dir().unwrap();
+    if !path.exists() {
+        fs::create_dir_all(&path).unwrap();
+    }
+    path.push("error.log");
+    let app = app.handle();
+    panic::set_hook(Box::new(move |info|{
+        let file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(path.clone()).unwrap();
+        let now = Local::now().format("%Y-%m-%d %H:%M:%S:%3f").to_string();
+        let mut buf_writer = BufWriter::new(file);
+        let info = format!("[{}]:{}\n",now,info);
+        buf_writer.write_all( info.as_bytes()).unwrap();
+        buf_writer.flush().unwrap();
+        app.exit(1)
+    }));
+}
 
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
+            handle_panic(app);
             global::set_app_handle(app.handle());
-            key::setup();
+            hotkey::setup();
             window::setup();
             Ok(())
         })
@@ -25,7 +52,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             global::state_get,
             global::state_set,
-            window::start_move
+            window::start_move,
+            other::insert
         ])
         .plugin(tauri_plugin_sqlite::init())
         .run(generate_context!())
