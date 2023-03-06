@@ -1,4 +1,5 @@
 use tauri::{AppHandle, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu, Wry};
+use crate::window;
 
 pub fn system_tray() -> SystemTray {
     let quit = CustomMenuItem::new("quit".to_string(), "退出");
@@ -11,8 +12,6 @@ pub fn action(app: &AppHandle<Wry>, event: SystemTrayEvent) {
     if let SystemTrayEvent::LeftClick { .. } = event {
         let window = app.get_window("main").unwrap();
         if window.is_visible().unwrap() {
-            window.hide().unwrap();
-        } else {
             window.center().unwrap();
             window.show().unwrap();
             window.set_focus().unwrap();
@@ -22,6 +21,8 @@ pub fn action(app: &AppHandle<Wry>, event: SystemTrayEvent) {
         if let "quit" = id.as_str() {
             app.exit(0);
         };
-        if let "setting" = id.as_str() {}
+        if let "setting" = id.as_str() {
+            window::settings_window()
+        }
     };
 }

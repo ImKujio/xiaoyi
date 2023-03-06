@@ -9,7 +9,8 @@ mod hotkey;
 mod global;
 mod tray;
 mod window;
-mod other;
+mod utils;
+mod action;
 
 use std::{fs, panic};
 use std::fs::OpenOptions;
@@ -42,7 +43,7 @@ fn main() {
     tauri::Builder::default()
         .setup(|app| {
             handle_panic(app);
-            global::set_app_handle(app.handle());
+            global::setup(app.handle());
             hotkey::setup();
             window::setup();
             Ok(())
@@ -50,10 +51,10 @@ fn main() {
         .system_tray(tray::system_tray())
         .on_system_tray_event(|app, event| tray::action(app, event))
         .invoke_handler(tauri::generate_handler![
-            global::state_get,
-            global::state_set,
+            global::state_post,
+            global::state_fetch,
             window::start_move,
-            other::insert
+            action::insert
         ])
         .plugin(tauri_plugin_sqlite::init())
         .run(generate_context!())

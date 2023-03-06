@@ -117,7 +117,7 @@ async function onEnter() {
 
 async function onPin() {
   pin.value = !pin.value
-  await invoke("state_set", {key: "main://pin", val: pin.value ? "1" : "0"})
+  await invoke("state_post", {key: "main-pin", val: pin.value })
 }
 
 function onTrans() {
@@ -135,7 +135,7 @@ async function onCopy() {
 }
 
 async function onInsert() {
-  await invoke("insert", {label: "main", text: dst.value})
+  await invoke("insert", {text: dst.value})
 }
 
 function reset() {

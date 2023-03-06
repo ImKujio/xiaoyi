@@ -1,31 +1,29 @@
-use std::collections::HashMap;
-use std::fmt::Formatter;
 use std::thread;
 use std::thread::sleep;
-use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use std::time::{Duration};
 use mki::Keyboard;
-use once_cell::sync::OnceCell;
-use tauri::{ClipboardManager, GlobalShortcutManager, Manager};
-use crate::{global, window};
+use tauri::GlobalShortcutManager;
+use crate::{action, global};
+use crate::global::JsonValue;
+use crate::utils::now_timestamp;
 
 pub fn setup() {
     register_take_words("Ctrl+Alt+D".to_string());
 }
 
+fn register<F: Fn() + Send + 'static>(accelerator: &str, handler: F){
+    global::app().global_shortcut_manager().register(accelerator, handler).unwrap();
+}
 
 fn register_take_words(hotkey:String) {
-    let mut sm = global::get_app_handle().global_shortcut_manager();
-    sm.register(hotkey.as_str(), move ||{
-        let last_trigger = global::state_get("main:last-trigger".to_string())
-            .unwrap_or("0".to_string()).parse::<u128>().unwrap_or(0u128);
-        let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
-        if now - last_trigger < 1000u128 { return; }
-        global::state_set("main:last-trigger".to_string(), now.to_string());
+    register(hotkey.as_str(), move ||{
+        let last = global::state_get("last-take-words").as_u64().unwrap_or(0u64);
+        let now = now_timestamp();
+        if now - last < 1000u64 { return; }
+        global::state_set("last-take-words", JsonValue::from(now));
 
-        let app = global::get_app_handle();
-        let mut clipboard = app.clipboard_manager();
-        let old = clipboard.read_text().unwrap_or(Some(String::new())).unwrap_or(String::new());
-        clipboard.write_text(format!("xiaoyi://flag")).unwrap();
+        let original = global::clipboard_get();
+        global::clipboard_set("xiaoyi://flag");
 
         Keyboard::D.release();
         Keyboard::LeftAlt.release();
@@ -42,27 +40,15 @@ fn register_take_words(hotkey:String) {
 
         thread::spawn(move || {
             sleep(Duration::from_millis(50));
-            let mut copy = clipboard.read_text().unwrap_or(Some(String::new())).unwrap_or(String::new());
-            let window = app.get_window("main").unwrap();
-            if copy == format!("xiaoyi://flag") { copy = format!("") };
-            window.emit("main://translate", copy).unwrap();
-            clipboard.write_text(old).unwrap();
-            if global::state_get(format!("main://pin")) == Some(format!("1")) { return; }
-            window.set_size(window::initial_size("main")).unwrap();
-            window.set_position(window::pos_by_cursor("main")).unwrap();
-            window.show().unwrap();
-            window.set_focus().unwrap();
+            let copy = global::clipboard_get();
+            let copy = if copy == "xiaoyi://flag".to_string() { "".to_string() } else { copy };
+            action::translate(copy);
+            global::clipboard_set(original.as_str());
         });
-    }).unwrap();
+    });
 }
 
-
-struct Hotkey {
-    modkeys: HashMap<String, String>,
-    keys: HashMap<String, String>,
-}
-
-static MODKEYS: [(&str, &str); 4] = [
+static MODS: [(&str, &str); 4] = [
     ("Ctrl+Alt", "Ctrl+Alt"),
     ("Ctrl+Shift", "Ctrl+Shift"),
     ("Shift+Alt", "Shift+Alt"),
