@@ -38,7 +38,7 @@
       </button>
     </div>
     <flex-wrapper :key="key" :class="{'trans-page':trans,'fade':!origin,'fill':origin}" padding="4px">
-      <textarea v-focus="origin" ref="inputRef" rows="1" v-model="src" placeholder="输入内容后按下Enter翻译" @keydown.enter.prevent="onTranslate"/>
+      <textarea v-focus="origin" ref="inputRef" rows="1" v-model="src" placeholder="输入内容后按下Enter翻译" @keydown.enter.prevent="onEnter"/>
     </flex-wrapper>
     <flex-wrapper :key="key+1000" :class="{'trans-page':trans,'fade':origin,'fill':!origin}" padding="4px">
       <div style="box-sizing: border-box;padding: 4px;width: 100%;height: 100%;overflow-y: scroll;white-space: pre-wrap;">
@@ -69,7 +69,7 @@ const target = ref(0)
 const copied = ref(false)
 
 
-async function onTranslate() {
+async function translate() {
   if (src.value.trim() === "") return
   copied.value = false
   NProgress.start()
@@ -94,14 +94,26 @@ onMounted(async () => {
   events.translate = await listen("main://translate", async (e) => {
     src.value = e.payload.trim()
     reset()
-    if (src.value === "") inputRef.value.focus()
-    await onTranslate(true)
+    if (src.value !== "") {
+      let auto = query.auto(src.value);
+      if (auto !== -1) target.value = auto
+      await translate(true)
+    }
   })
 })
 
 onUnmounted(async () => {
   events.translate()
 })
+
+async function onEnter() {
+  if (src.value !== "") {
+    let auto = query.auto(src.value);
+    if (auto !== -1) target.value = auto
+    await translate(true)
+  }
+}
+
 
 async function onPin() {
   pin.value = !pin.value
@@ -114,7 +126,7 @@ function onTrans() {
 
 function onTraget() {
   target.value = (target.value + 1) % query.target.length
-  if (!origin.value) onTranslate()
+  if (!origin.value) translate()
 }
 
 async function onCopy() {

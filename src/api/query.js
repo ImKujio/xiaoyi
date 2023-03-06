@@ -4,11 +4,16 @@ import MD5 from "js-md5";
 const zhPat = new RegExp("[\u4E00-\u9FA5]+");
 
 export default {
-    target:[
+    target: [
         {name: "中", value: "zh"},
         {name: "英", value: "en"},
     ],
-    query:async function(text,target){
+    auto: function (query) {
+        let chinese = query.match(/[\u4e00-\u9fa5]/g);  // 匹配汉字
+        if (!chinese) return 0
+        return chinese.length <= (query.length / 2) ? 0 : 1;
+    },
+    query: async function (text, target) {
         const appid = '20201014000589277';
         const key = 'OoVc0AO250OLX85blAQB';
         const salt = (new Date).getTime().toString();

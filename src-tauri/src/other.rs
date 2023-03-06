@@ -11,10 +11,10 @@ pub async fn insert(label: String, text: String) {
     let mut clipboard = app.clipboard_manager();
     clipboard.write_text(text).unwrap();
     window.hide().unwrap();
-    sleep(Duration::from_micros(400));
+    sleep(Duration::from_millis(100));
     Keyboard::LeftControl.press();
     Keyboard::V.press();
-    sleep(Duration::from_micros(10));
+    sleep(Duration::from_millis(2));
     Keyboard::V.release();
     Keyboard::LeftControl.release();
 }
