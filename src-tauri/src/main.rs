@@ -31,11 +31,11 @@ fn handle_panic(app: &App<Wry>){
             .append(true)
             .open(path.clone()).unwrap();
         let now = Local::now().format("%Y-%m-%d %H:%M:%S:%3f").to_string();
-        let mut buf_writer = BufWriter::new(file);
+        let mut buf = BufWriter::new(file);
         let info = format!("[{}]:{}\n",now,info);
-        buf_writer.write_all( info.as_bytes()).unwrap();
-        buf_writer.flush().unwrap();
-        app.exit(1)
+        buf.write_all( info.as_bytes()).unwrap();
+        buf.flush().unwrap();
+        app.exit(555)
     }));
 }
 
