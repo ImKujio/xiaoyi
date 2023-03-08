@@ -7,6 +7,7 @@ pub fn setup() {
     let window_main = global::window_main();
     if let Err(_) = set_shadow(&window_main, true) {}
     if let Err(_) = apply_blur(&window_main, Some((255, 255, 255, 200))) {}
+    window_main.set_size(main_size()).unwrap();
     window_main.on_window_event(move |e| {
         if let WindowEvent::Focused(focus) = e {
             if focus.to_owned() { return; }
@@ -32,9 +33,14 @@ pub fn settings_window() {
         ).title(format!("小译设置"))
             .resizable(false)
             .build().unwrap();
-        window_settings.set_size(PhysicalSize { height: 600, width: 800 }).unwrap();
-        window_settings.set_max_size(Some(PhysicalSize { height: 600, width: 800 })).unwrap();
-        window_settings.set_min_size(Some(PhysicalSize { height: 600, width: 800 })).unwrap()
+        window_settings.set_size(size(800, 600)).unwrap();
+        window_settings.set_max_size(Some(size(800, 600))).unwrap();
+        window_settings.set_min_size(Some(size(800, 600))).unwrap();
+        window_settings.on_window_event(|e| {
+            if let WindowEvent::CloseRequested { .. } = e {
+                global::settings_store();
+            }
+        });
     }
 }
 
@@ -70,7 +76,7 @@ pub fn pos_by_cursor(label: &str) -> PhysicalPosition<i32> {
         let hdc = GetDC(std::ptr::null_mut());
         (GetDeviceCaps(hdc, HORZRES) as i32, GetDeviceCaps(hdc, VERTRES) as i32)
     };
-    let isize = size(280,168);
+    let isize = main_size();
     if pos.x + isize.width > dis.0 && pos.y + isize.height > dis.1 {
         PhysicalPosition { x: pos.x - isize.width, y: pos.y - isize.height }
     } else if pos.x + isize.width > dis.0 {
@@ -88,36 +94,8 @@ pub fn size(w: i32, h: i32) -> PhysicalSize<i32> {
     PhysicalSize { width: size.0, height: size.1 }
 }
 
-// use winapi::um::winuser::GetAncestor;
-// use winapi::um::winuser::GetWindowLongPtrW;
-// use winapi::um::winuser::GWL_STYLE;
-// use winapi::um::winuser::SetWindowLongPtrW;
-// use winapi::um::winuser::SWP_DRAWFRAME;
-// use winapi::um::winuser::SWP_FRAMECHANGED;
-// use winapi::um::winuser::SWP_NOACTIVATE;
-// use winapi::um::winuser::SWP_NOMOVE;
-// use winapi::um::winuser::SWP_NOREPOSITION;
-// use winapi::um::winuser::SWP_NOZORDER;
-// use winapi::um::winuser::HWND_TOPMOST;
-
-// fn disable_window_animations(label: &str) {
-//     let window = global::get_window(label).unwrap();
-//     let hwnd = window.A().unwrap();
-//     let style = unsafe { GetWindowLongPtrW(hwnd, GWL_STYLE) };
-//     let new_style = style & !(0x0002 | 0x0001); // remove WS_BORDER and WS_CAPTION
-//     unsafe {
-//         SetWindowLongPtrW(hwnd, GWL_STYLE, new_style);
-//
-//         let mut rect = std::mem::zeroed();
-//         let result = GetWindowRect(hwnd, &mut rect);
-//         if result == 0 {
-//             return; // failed to get the window position and size
-//         }
-//         let width = rect.right - rect.left;
-//         let height = rect.bottom - rect.top;
-//         let x = rect.left;
-//         let y = rect.top;
-//         let flags = SWP_NOMOVE | SWP_NOZORDER | SWP_NOREPOSITION | SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_DRAWFRAME;
-//         SetWindowPos(hwnd, HWND_TOPMOST, x, y, width, height, flags);
-//     }
-// }
+pub fn main_size() -> PhysicalSize<i32> {
+    let w = global::settings_get("width").as_i64().unwrap_or(280) as i32;
+    let h = global::settings_get("height").as_i64().unwrap_or(168) as i32;
+    size(w, h)
+}

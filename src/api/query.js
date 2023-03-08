@@ -1,8 +1,6 @@
 import {getClient} from "@tauri-apps/api/http";
 import MD5 from "js-md5";
 
-const zhPat = new RegExp("[\u4E00-\u9FA5]+");
-
 export default {
     target: [
         {name: "中", value: "zh"},

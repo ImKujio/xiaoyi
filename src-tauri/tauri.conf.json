@@ -32,6 +32,17 @@
       },
       "globalShortcut": {
         "all": true
+      },
+      "fs": {
+        "scope": [
+          "$RESOURCE"
+        ],
+        "readFile": true,
+        "readDir": true,
+        "exists": true
+      },
+      "path": {
+        "all": true
       }
     },
     "bundle": {
@@ -58,7 +69,9 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": ["./dict.db"],
+      "resources": [
+        "./dict.db"
+      ],
       "shortDescription": "",
       "targets": "all",
       "windows": {

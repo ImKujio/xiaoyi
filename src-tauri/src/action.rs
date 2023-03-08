@@ -1,6 +1,8 @@
 use std::thread::sleep;
 use std::time::Duration;
+
 use mki::Keyboard;
+
 use crate::{global, window};
 
 #[tauri::command]
@@ -19,7 +21,7 @@ pub fn translate(text: String) {
     let window = global::window_main();
     window.emit("main://translate", text).unwrap();
     if global::state_get("main-pin").as_bool() == Some(true) { return; }
-    window.set_size(window::size(280,168)).unwrap();
+    window.set_size(window::main_size()).unwrap();
     window.set_position(window::pos_by_cursor("main")).unwrap();
     window.show().unwrap();
     window.set_focus().unwrap();

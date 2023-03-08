@@ -5,6 +5,13 @@ windows_subsystem = "windows"
 
 extern crate core;
 
+use std::{fs, panic};
+use std::fs::OpenOptions;
+use std::io::{BufWriter, Write};
+
+use chrono::Local;
+use tauri::{App, generate_context, Wry};
+
 mod hotkey;
 mod global;
 mod tray;
@@ -12,14 +19,8 @@ mod window;
 mod utils;
 mod action;
 
-use std::{fs, panic};
-use std::fs::OpenOptions;
-use std::io::{BufWriter, Write};
-use chrono::{Local};
-use tauri::{App, generate_context, Wry};
-
 fn handle_panic(app: &App<Wry>){
-    let mut path = app.path_resolver().app_log_dir().unwrap();
+    let mut path = app.path_resolver().app_data_dir().unwrap();
     if !path.exists() {
         fs::create_dir_all(&path).unwrap();
     }
@@ -42,6 +43,7 @@ fn handle_panic(app: &App<Wry>){
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
+            println!("{:?}", app.path_resolver().resource_dir());
             handle_panic(app);
             global::setup(app.handle());
             hotkey::setup();

@@ -1,8 +1,10 @@
 use std::thread;
 use std::thread::sleep;
-use std::time::{Duration};
+use std::time::Duration;
+
 use mki::Keyboard;
 use tauri::GlobalShortcutManager;
+
 use crate::{action, global};
 use crate::global::JsonValue;
 use crate::utils::now_timestamp;
@@ -17,10 +19,10 @@ fn register<F: Fn() + Send + 'static>(accelerator: &str, handler: F){
 
 fn register_take_words(hotkey:String) {
     register(hotkey.as_str(), move ||{
-        let last = global::state_get("last-take-words").as_u64().unwrap_or(0u64);
+        let last = global::state_get("take-words-debounce").as_u64().unwrap_or(0u64);
         let now = now_timestamp();
         if now - last < 1000u64 { return; }
-        global::state_set("last-take-words", JsonValue::from(now));
+        global::state_set("take-words-debounce", JsonValue::from(now));
 
         let original = global::clipboard_get();
         global::clipboard_set("xiaoyi://flag");
