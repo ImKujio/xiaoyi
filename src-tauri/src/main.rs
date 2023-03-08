@@ -43,7 +43,6 @@ fn handle_panic(app: &App<Wry>){
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
-            println!("{:?}", app.path_resolver().resource_dir());
             handle_panic(app);
             global::setup(app.handle());
             hotkey::setup();

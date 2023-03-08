@@ -1,13 +1,19 @@
-import {createApp, watch} from "vue";
+import {createApp} from "vue";
 import "./style.css";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
-import App from "./App.vue";
-import "./init.js";
+import Main from "./main.vue";
 
 NProgress.configure({showSpinner: false,})
 
-const app = createApp(App)
+// 阻止 Ctrl + F/G/P
+window.addEventListener('keydown', function(event) {
+    if (event.ctrlKey && "fgp".includes(event.key)) {
+        event.preventDefault();
+    }
+});
+
+const app = createApp(Main)
 app.directive('click', {
     mounted(el, binding) {
         el.addEventListener('click', () => {
@@ -24,4 +30,3 @@ app.directive('focus', (el, binding) => {
     binding.value ? el.focus() : el.blur();
 })
 app.mount("#app");
-

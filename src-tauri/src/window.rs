@@ -29,13 +29,14 @@ pub fn settings_window() {
         let window_settings = tauri::WindowBuilder::new(
             app,
             "settings",
-            tauri::WindowUrl::App("settings.html".into()),
+            tauri::WindowUrl::App("src/settings.html".into()),
         ).title(format!("小译设置"))
             .resizable(false)
+            .maximized(false)
             .build().unwrap();
-        window_settings.set_size(size(800, 600)).unwrap();
-        window_settings.set_max_size(Some(size(800, 600))).unwrap();
-        window_settings.set_min_size(Some(size(800, 600))).unwrap();
+        window_settings.set_size(size(600, 460)).unwrap();
+        window_settings.set_max_size(Some(size(600, 460))).unwrap();
+        window_settings.set_min_size(Some(size(600, 460))).unwrap();
         window_settings.on_window_event(|e| {
             if let WindowEvent::CloseRequested { .. } = e {
                 global::settings_store();

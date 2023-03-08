@@ -1,5 +1,5 @@
 <template>
-  <div class="content">
+  <div class="flex-col">
     <div id="title">
       <button class="btn-round left" v-click="onPin" :style="pin ? {color:'#18a058'} : null">
         <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 16 16">
@@ -37,14 +37,18 @@
         {{ origin ? "原" : "译" }}
       </button>
     </div>
-    <flex-wrapper :key="key" :class="{'trans-page':trans,'fade':!origin,'fill':origin}" padding="4px">
-      <textarea v-focus="origin" ref="inputRef" rows="1" v-model="src" placeholder="输入内容后按下Enter翻译" @keydown.enter.prevent="onEnter"/>
-    </flex-wrapper>
-    <flex-wrapper :key="key+1000" :class="{'trans-page':trans,'fade':origin,'fill':!origin}" padding="4px">
-      <div style="box-sizing: border-box;padding: 4px;width: 100%;height: 100%;overflow-y: scroll;white-space: pre-wrap;">
-        {{ dst }}
+    <div :key="key" class="flex-fill-wrapper" :class="{'trans-page':trans,'fade':!origin,'fill':origin}">
+      <div class="flex-fill-container">
+        <textarea id="trans-input" v-focus="origin" ref="inputRef" rows="1" v-model="src" placeholder="输入内容后按下Enter翻译" @keydown.enter.prevent="onEnter"/>
       </div>
-    </flex-wrapper>
+    </div>
+    <div :key="key" class="flex-fill-wrapper" :class="{'trans-page':trans,'fade':origin,'fill':!origin}">
+      <div class="flex-fill-container">
+        <div id="translation">
+          {{ dst }}
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -53,10 +57,9 @@ import {listen} from "@tauri-apps/api/event"
 import {invoke} from "@tauri-apps/api/tauri";
 import {writeText} from '@tauri-apps/api/clipboard';
 import {nextTick, onMounted, onUnmounted, reactive, ref} from "vue";
-import dict from "./api/dict.js";
-import FlexWrapper from "./components/FlexWrapper.vue";
+import dict from "./dict.js";
 import NProgress from "nprogress"
-import query from "./api/query.js";
+import query from "./query.js";
 
 const events = reactive({})
 const src = ref("")
@@ -117,7 +120,7 @@ async function onEnter() {
 
 async function onPin() {
   pin.value = !pin.value
-  await invoke("state_post", {key: "main-pin", val: pin.value })
+  await invoke("state_post", {key: "main-pin", val: pin.value})
 }
 
 function onTrans() {
@@ -149,7 +152,22 @@ function reset() {
 </script>
 
 <style scoped>
-textarea {
+#title {
+  display: flex;
+  flex-direction: row;
+}
+
+#title .left {
+  margin-top: 4px;
+  margin-left: 4px;
+}
+
+#title .right {
+  margin-top: 4px;
+  margin-right: 4px;
+}
+
+#trans-input{
   height: 100%;
   width: 100%;
   padding: 4px;
@@ -164,19 +182,8 @@ textarea {
   box-sizing: border-box;
 }
 
-#title {
-  display: flex;
-  flex-direction: row;
-}
-
-#title .left {
-  margin-top: 4px;
-  margin-left: 4px;
-}
-
-#title .right {
-  margin-top: 4px;
-  margin-right: 4px;
+#translation {
+  box-sizing: border-box;padding: 4px;width: 100%;height: 100%;overflow-y: scroll;white-space: pre-wrap;
 }
 
 .trans-page {
@@ -201,4 +208,50 @@ textarea {
   flex: 1;
 }
 
+.btn-round {
+  color: #333639;
+  margin: 0;
+  width: 28px;
+  height: 28px;
+  padding: 6px;
+  background: transparent;
+  outline: 0;
+  border-radius: 14px;
+  border-width: 0;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-round:hover {
+  background: #0000000d;
+}
+
+.btn-round:disabled {
+  color: #b6b6b6;
+}
+
+.btn-rect {
+  color: #333639;
+  margin: 0;
+  height: 28px;
+  padding: 6px;
+  background: transparent;
+  outline: 0;
+  border-radius: 4px;
+  border-width: 0;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-rect:hover {
+  background: #0000000d;
+}
+
+.trans-text {
+  transition: all 0.3s;
+}
 </style>

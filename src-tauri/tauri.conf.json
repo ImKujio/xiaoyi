@@ -104,7 +104,8 @@
         "decorations": false,
         "center": true,
         "transparent": true,
-        "visible": false
+        "visible": false,
+        "url": "src/main.html"
       }
     ],
     "systemTray": {

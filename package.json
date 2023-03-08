@@ -10,7 +10,6 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@iamtraction/google-translate": "github:iamtraction/google-translate",
     "@tauri-apps/api": "^1.2.0",
     "js-md5": "^0.7.3",
     "nprogress": "^0.2.0",
