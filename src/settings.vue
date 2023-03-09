@@ -20,7 +20,7 @@
           <n-form-item label="开机自启" path="switchValue">
             <n-switch v-model:value="autoStart"/>
           </n-form-item>
-          <n-form-item label="窗口宽度" path="switchValue" >
+          <n-form-item label="窗口宽度" path="switchValue">
             <n-slider v-model:value="windowWidth" :step="5" :min="280" :max="560"/>
           </n-form-item>
           <n-form-item label="窗口高度" path="switchValue">
@@ -35,7 +35,7 @@
 
 <script setup>
 import {nextTick, onMounted, onUnmounted, reactive, ref} from "vue";
-import {NCard,NForm, NFormItem, NSwitch,NSlider} from "naive-ui";
+import {NCard, NForm, NFormItem, NSwitch, NSlider} from "naive-ui";
 
 const active = ref(0)
 const autoStart = ref(false)
@@ -81,13 +81,15 @@ function onMenuTap(val) {
   background: #0000000d;
   color: var(--pColor);
 }
-.content{
+
+.content {
   display: flex;
   flex-direction: column;
   flex: 1;
+  padding: 8px;
 }
-.n-card{
-  margin: 8px;
-  flex-shrink: 0
+
+.n-slider {
+  width: 60%
 }
 </style>
