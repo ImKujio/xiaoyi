@@ -1,6 +1,6 @@
 [package]
 name = "xiaoyi"
-version = "0.2.5"
+version = "0.2.6"
 description = "一个简单的划词翻译软件，选中文本按下Ctrl-Alt-D显示翻译"
 authors = ["kujio"]
 license = ""
