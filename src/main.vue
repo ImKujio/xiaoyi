@@ -39,7 +39,8 @@
     </div>
     <div :key="key" class="flex-fill-wrapper" :class="{'trans-page':trans,'fade':!origin,'fill':origin}">
       <div class="flex-fill-container">
-        <textarea id="trans-input" v-focus="origin" ref="inputRef" rows="1" v-model="src" placeholder="输入内容后按下Enter翻译" @keydown.enter.prevent="onEnter"/>
+        <textarea id="trans-input" v-focus="origin" ref="inputRef" rows="1" v-model="src" placeholder="输入内容后按下Enter翻译"
+                  @keydown.enter.prevent="onEnter"/>
       </div>
     </div>
     <div :key="key" class="flex-fill-wrapper" :class="{'trans-page':trans,'fade':origin,'fill':!origin}">
@@ -71,6 +72,14 @@ const key = ref(0)
 const target = ref(0)
 const copied = ref(false)
 
+listen("main://translate", async (e) => {
+  src.value = e.payload.trim()
+  reset()
+  if (src.value === "") return
+  let auto = query.auto(src.value);
+  if (auto !== -1) target.value = auto
+  await translate(true)
+}).then(value => events.translate = value)
 
 async function translate() {
   if (src.value.trim() === "") return
@@ -93,22 +102,6 @@ async function onMove() {
   await invoke("start_move", {label: "main"});
 }
 
-onMounted(async () => {
-  events.translate = await listen("main://translate", async (e) => {
-    src.value = e.payload.trim()
-    reset()
-    if (src.value !== "") {
-      let auto = query.auto(src.value);
-      if (auto !== -1) target.value = auto
-      await translate(true)
-    }
-  })
-})
-
-onUnmounted(async () => {
-  events.translate()
-})
-
 async function onEnter() {
   if (src.value !== "") {
     let auto = query.auto(src.value);
@@ -116,7 +109,6 @@ async function onEnter() {
     await translate(true)
   }
 }
-
 
 async function onPin() {
   pin.value = !pin.value
@@ -167,7 +159,7 @@ function reset() {
   margin-right: 4px;
 }
 
-#trans-input{
+#trans-input {
   height: 100%;
   width: 100%;
   padding: 4px;
@@ -183,7 +175,12 @@ function reset() {
 }
 
 #translation {
-  box-sizing: border-box;padding: 4px;width: 100%;height: 100%;overflow-y: scroll;white-space: pre-wrap;
+  box-sizing: border-box;
+  padding: 4px;
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+  white-space: pre-wrap;
 }
 
 .trans-page {
