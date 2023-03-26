@@ -3,6 +3,7 @@ import "./style.css";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import Main from "./main.vue";
+import SvgIcon from "./svg-icon/index.vue"
 
 NProgress.configure({showSpinner: false,})
 
@@ -14,6 +15,9 @@ window.addEventListener('keydown', function(event) {
 });
 
 const app = createApp(Main)
+
+app.component("svg-icon", SvgIcon)
+
 app.directive('click', {
     mounted(el, binding) {
         el.addEventListener('click', () => {
@@ -22,7 +26,7 @@ app.directive('click', {
             binding.value()
             setTimeout(() => {
                 el.__stop_click__ = false;
-            }, binding.arg || 500)
+            }, binding.arg || 400)
         })
     }
 })

@@ -1,12 +1,13 @@
 use mki::{Action, bind_button, InhibitEvent, Mouse, remove_button_bind, State};
 use tauri::{Manager, PhysicalPosition, PhysicalSize, UserAttentionType, WindowEvent};
+use tauri::utils::TitleBarStyle;
 use crate::{global};
 
 
 pub fn setup() {
     let window_main = global::window_main();
-    if let Err(_) = set_shadow(&window_main, true) {}
-    if let Err(_) = apply_blur(&window_main, Some((255, 255, 255, 200))) {}
+    set_shadow(&window_main, true).unwrap();
+    apply_blur(&window_main, Some((255, 255, 255, 200))).unwrap();
     window_main.set_size(main_size()).unwrap();
     window_main.on_window_event(move |e| {
         if let WindowEvent::Focused(focus) = e {
@@ -33,10 +34,12 @@ pub fn settings_window() {
         ).title(format!("小译设置"))
             .resizable(false)
             .maximized(false)
+            .inner_size(600f64, 460f64)
+            .max_inner_size(600f64, 460f64)
+            .min_inner_size(600f64, 460f64)
+            .decorations(false)
             .build().unwrap();
-        window_settings.set_size(size(600, 460)).unwrap();
-        window_settings.set_max_size(Some(size(600, 460))).unwrap();
-        window_settings.set_min_size(Some(size(600, 460))).unwrap();
+        set_shadow(&window_settings, true).unwrap();
         window_settings.on_window_event(|e| {
             if let WindowEvent::CloseRequested { .. } = e {
                 global::settings_store();

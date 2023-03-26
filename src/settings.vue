@@ -1,95 +1,45 @@
 <template>
-  <div class="flex-row">
-    <div class="menu">
-      <button class="menu-item" :class="{'active':active===0}" v-click="()=>active=0">
-        基础设置
-      </button>
-      <button class="menu-item" :class="{'active':active===1}" v-click="()=>active=1">
-        翻译接口
-      </button>
-      <button class="menu-item" :class="{'active':active===2}" v-click="()=>active=2">
-        OCR接口
-      </button>
-      <button class="menu-item" :class="{'active':active===3}" v-click="()=>active=3">
-        软件信息
-      </button>
+  <div class="flex-col">
+    <div style="height: 32px;display: flex;flex-direction: row;align-items: center">
+      <svg-icon style="width: 16px;height: 16px;margin:0 8px" name="logo"/>
+      <span>小译设置</span>
     </div>
-    <div class="content">
-      <n-card v-if="active===0" title="基础设置">
-        <n-form label-placement="left" label-width="auto" require-mark-placement="right-hanging">
-          <n-form-item label="开机自启" path="switchValue">
-            <n-switch v-model:value="autoStart"/>
-          </n-form-item>
-          <n-form-item label="窗口宽度" path="switchValue">
-            <n-slider v-model:value="windowWidth" :step="5" :min="280" :max="560"/>
-          </n-form-item>
-          <n-form-item label="窗口高度" path="switchValue">
-            <n-slider v-model:value="windowHeight" :step="5" :min="168" :max="336"/>
-          </n-form-item>
-
-        </n-form>
-      </n-card>
+    <div data-tauri-drag-region style="height: 32px; width: 100%;position: absolute;top: 0"/>
+    <button  class="btn-rect inactive" style="position:absolute;top:4px;right:4px;padding: 6px 12px" v-click="async () => {await appWindow.close()}">
+      <svg-icon style="width: 16px;height: 16px" name="close"/>
+    </button>
+    <div style="position: absolute;top:0;left: 50%;transform:translateX(-50%);display: flex;flex-direction: row;align-items: center">
+      <button class="btn-rect left trans-tab" :class="{active:active===0,inactive:active!==0}" v-click="() => active=0">基础设置</button>
+      <button class="btn-rect left trans-tab" :class="{active:active===1,inactive:active!==1}" v-click="() => active=1">翻译接口</button>
+      <button class="btn-rect left trans-tab" :class="{active:active===2,inactive:active!==2}" v-click="() => active=2">OCR接口</button>
+      <button class="btn-rect left trans-tab" :class="{active:active===3,inactive:active!==3}" v-click="() => active=3">关于</button>
+    </div>
+    <div class="flex-col">
+      123
     </div>
   </div>
 </template>
 
 <script setup>
-import {nextTick, onMounted, onUnmounted, reactive, ref} from "vue";
-import {NCard, NForm, NFormItem, NSwitch, NSlider} from "naive-ui";
+import {ref} from "vue";
+import {appWindow} from "@tauri-apps/api/window";
 
 const active = ref(0)
-const autoStart = ref(false)
-const windowWidth = ref(280)
-const windowHeight = ref(168)
-
-function onMenuTap(val) {
-  active.value = val
-}
 
 </script>
 
 <style scoped>
-.menu {
-  width: 80px;
-  padding: 4px;
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-}
-
-.menu-item {
-  color: #333639;
-  height: 40px;
-  width: inherit;
-  margin-top: 6px;
-  padding: 6px;
-  background: transparent;
-  outline: 0;
-  border-radius: 4px;
-  border-width: 0;
-  /*font-weight: bold;*/
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.menu-item:hover {
-  background: #0000000d;
-}
-
-.menu-item.active {
-  background: #0000000d;
+button.active {
+  font-weight: bold;
   color: var(--pColor);
 }
 
-.content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  padding: 8px;
+button.inactive {
+  color: #727272;
 }
 
-.n-slider {
-  width: 60%
+.trans-tab{
+  transition: color,font-size 0.2s linear;
 }
+
 </style>
