@@ -12,8 +12,8 @@ export default {
         return chinese.length <= (query.length / 2) ? 0 : 1;
     },
     query: async function (text, target) {
-        const appid = '20201014000589277';
-        const key = 'OoVc0AO250OLX85blAQB';
+        const appid = '20230331001623007';
+        const key = 'xfLERtGHNxxSOczfPcNm';
         const salt = (new Date).getTime().toString();
         const sign = MD5(appid + text + salt + key);
         const query = encodeURIComponent(text)
