@@ -77,8 +77,8 @@ async function translate() {
     }
   }
   dst.value = rst.join("\n");
-  NProgress.done()
   origin.value = false
+  NProgress.done()
 }
 
 async function onMove() {
