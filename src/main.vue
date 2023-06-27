@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-col">
+  <div class="flex-col" @keydown.tab.stop="onTrans">
     <div id="title">
       <button class="btn-round left" v-click="onPin" :style="pin ? {color:'#18a058'} : null">
         <svg-icon class="icon" name="pin"/>
@@ -11,7 +11,8 @@
       <button :key="key" class="btn-round right" :class="{'hide':origin,'trans-btn':trans}" v-click="onInsert">
         <svg-icon class="icon" style="rotate: 90deg" name="insert"/>
       </button>
-      <button :key="key" class="btn-round right trans-btn" :class="{'hide':origin,'trans-btn':trans}" :style="copied ? {color:'#18a058'} : null"
+      <button :key="key" class="btn-round right trans-btn" :class="{'hide':origin,'trans-btn':trans}"
+              :style="copied ? {color:'#18a058'} : null"
               v-click="onCopy">
         <svg-icon class="icon" name="copy"/>
       </button>
@@ -19,10 +20,11 @@
         {{ origin ? "原" : "译" }}
       </button>
     </div>
-    <div :key="key" class="flex-fill-wrapper" :class="{'trans-page':trans,'fade':!origin,'fill':origin}">
+    <div :key="key" class="flex-fill-wrapper" :class="{'trans-page':trans,'fade':!origin,'fill':origin}"
+         @transitionend="onFocus">
       <div class="flex-fill-container">
-        <textarea id="trans-input" v-focus="origin" ref="inputRef" rows="1" v-model="src" placeholder="输入内容后按下Enter翻译"
-                  @keydown.enter.prevent="onEnter"/>
+        <textarea id="trans-input" v-focus="true" ref="inputRef" rows="1" v-model="src" placeholder="输入内容后按下Enter翻译"
+                  @keydown.enter.prevent="onEnter" @keydown.tab.prevent="() => {}"/>
       </div>
     </div>
     <div :key="key" class="flex-fill-wrapper" :class="{'trans-page':trans,'fade':origin,'fill':!origin}">
@@ -39,7 +41,7 @@
 import {listen} from "@tauri-apps/api/event"
 import {invoke} from "@tauri-apps/api/tauri";
 import {writeText} from '@tauri-apps/api/clipboard';
-import {nextTick, reactive, ref} from "vue";
+import {nextTick, reactive, ref, watch} from "vue";
 import dict from "./dict.js";
 import NProgress from "nprogress"
 import query from "./query.js";
@@ -54,6 +56,7 @@ const trans = ref(true)
 const key = ref(0)
 const target = ref(0)
 const copied = ref(false)
+const inputRef = ref()
 
 listen("main://translate", async (e) => {
   src.value = e.payload.trim()
@@ -63,6 +66,10 @@ listen("main://translate", async (e) => {
   if (auto !== -1) target.value = auto
   await translate(true)
 }).then(value => events.translate = value)
+
+watch(src,() => {
+  dst.value = ""
+})
 
 async function translate() {
   if (src.value.trim() === "") return
@@ -99,7 +106,15 @@ async function onPin() {
 }
 
 function onTrans() {
+  if (origin && !dst.value) return
   origin.value = !origin.value
+}
+
+function onFocus() {
+  if (origin.value) {
+    inputRef.value.focus()
+    inputRef.value.select()
+  }
 }
 
 function onTraget() {
@@ -142,7 +157,7 @@ function reset() {
   margin-right: 4px;
 }
 
-#title .icon{
+#title .icon {
   width: 16px;
   height: 16px;
 }
