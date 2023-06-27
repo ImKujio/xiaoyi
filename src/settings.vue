@@ -15,7 +15,15 @@
       <button class="btn-rect left trans-tab" :class="{active:active===3,inactive:active!==3}" v-click="() => active=3">关于</button>
     </div>
     <div class="flex-col">
-      123
+      <n-scrollbar style="flex: 1">
+        <div v-if="active === 0" class="flex-col">
+          <n-form label-width="auto" label-placement="left" style="margin: 16px">
+            <n-form-item label="开机自启">
+              <n-switch :value="autoStart" @update:value="onAutoStart"/>
+            </n-form-item>
+          </n-form>
+        </div>
+      </n-scrollbar>
     </div>
   </div>
 </template>
@@ -23,8 +31,20 @@
 <script setup>
 import {ref} from "vue";
 import {appWindow} from "@tauri-apps/api/window";
+import { enable, isEnabled, disable } from "tauri-plugin-autostart-api";
+import {NForm,NFormItem,NSwitch,NScrollbar} from "naive-ui";
 
 const active = ref(0)
+const autoStart = ref(false)
+
+isEnabled().then(value => autoStart.value = value)
+
+async function onAutoStart(val) {
+  if (val) await enable()
+  else await disable()
+  autoStart.value = await isEnabled()
+}
+
 
 </script>
 

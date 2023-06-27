@@ -11,6 +11,7 @@ use std::io::{BufWriter, Write};
 
 use chrono::Local;
 use tauri::{App, generate_context, Wry};
+use tauri_plugin_autostart::MacosLauncher;
 
 mod hotkey;
 mod global;
@@ -19,22 +20,22 @@ mod window;
 mod utils;
 mod action;
 
-fn handle_panic(app: &App<Wry>){
+fn handle_panic(app: &App<Wry>) {
     let mut path = app.path_resolver().app_data_dir().unwrap();
     if !path.exists() {
         fs::create_dir_all(&path).unwrap();
     }
     path.push("error.log");
     let app = app.handle();
-    panic::set_hook(Box::new(move |info|{
+    panic::set_hook(Box::new(move |info| {
         let file = OpenOptions::new()
             .create(true)
             .append(true)
             .open(path.clone()).unwrap();
         let now = Local::now().format("%Y-%m-%d %H:%M:%S:%3f").to_string();
         let mut buf = BufWriter::new(file);
-        let info = format!("[{}]:{}\n",now,info);
-        buf.write_all( info.as_bytes()).unwrap();
+        let info = format!("[{}]:{}\n", now, info);
+        buf.write_all(info.as_bytes()).unwrap();
         buf.flush().unwrap();
         app.exit(555)
     }));
@@ -58,6 +59,7 @@ fn main() {
             action::insert
         ])
         .plugin(tauri_plugin_sqlite::init())
+        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
         .run(generate_context!())
         .expect("error while running tauri application");
 }
